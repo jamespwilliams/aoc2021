@@ -31,3 +31,8 @@ cp -r template "$day"
 
 curl "https://adventofcode.com/2021/day/$day_unpadded/input" \
   -H "cookie: session=$AOC_SESSION" > $day/input
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+echo "${bold}Challenge description:${normal} https://adventofcode.com/2021/day/$day_unpadded"
