@@ -1,11 +1,16 @@
+(library
+  (name common)
+  (libraries core)
+  (modules Common))
+
 (executable
  (name mainA)
- (libraries core)
+ (libraries core common)
  (modes byte exe)
  (modules MainA))
 
 (executable
  (name mainB)
- (libraries core)
+ (libraries core common)
  (modes byte exe)
  (modules MainB))
