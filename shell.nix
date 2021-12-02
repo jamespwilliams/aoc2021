@@ -12,5 +12,6 @@ pkgs.mkShell {
     ocaml-lsp
     ocamlformat
     core
+    utop
   ];
 }
