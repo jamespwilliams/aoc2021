@@ -1,11 +1,21 @@
+(library
+  (name card)
+  (libraries core)
+  (modules Card))
+
+(library
+  (name common)
+  (libraries core card)
+  (modules Common))
+
 (executable
  (name mainA)
- (libraries core)
+ (libraries core card common)
  (modes byte exe)
  (modules MainA))
 
 (executable
  (name mainB)
- (libraries core)
+ (libraries core card common)
  (modes byte exe)
  (modules MainB))
