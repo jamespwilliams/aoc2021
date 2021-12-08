@@ -4,18 +4,18 @@
   (modules Card))
 
 (library
-  (name common)
+  (name parse)
   (libraries core card)
-  (modules Common))
+  (modules Parse))
 
 (executable
  (name mainA)
- (libraries core card common)
+ (libraries core card parse)
  (modes byte exe)
  (modules MainA))
 
 (executable
  (name mainB)
- (libraries core card common)
+ (libraries core card parse)
  (modes byte exe)
  (modules MainB))

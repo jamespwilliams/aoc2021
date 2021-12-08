@@ -13,13 +13,15 @@ let wins card =
 
 let iter card ~f = Array.iter card ~f:(fun row -> Array.iter row ~f)
 
+let sum m card ~f = Array.sum m card ~f:(fun row -> Array.sum m row ~f)
+
 let mark : t -> int -> unit =
  fun card set_num ->
   iter card ~f:(fun num -> if num.number = set_num then num.marked <- true)
 
 let score : t -> int =
  fun card ->
-  Array.fold card ~init:0 ~f:(fun acc row ->
-      acc
-      + Array.fold row ~init:0 ~f:(fun acc entry ->
-            acc + if entry.marked then 0 else entry.number))
+  sum
+    (module Int)
+    card
+    ~f:(fun entry -> if entry.marked then 0 else entry.number)

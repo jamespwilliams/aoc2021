@@ -1,5 +1,4 @@
 open Core
-open Common
 
 let winning_cards cards numbers =
   let rec winning_cards_aux number = function
@@ -25,7 +24,7 @@ let last_winning_card_and_number cards numbers =
 let () =
   let input = In_channel.read_lines "../input" in
 
-  let cards, bingo_numbers = parse_input input in
+  let cards, bingo_numbers = Parse.parse_input input in
 
   let winning_number, winning_card =
     last_winning_card_and_number cards bingo_numbers
