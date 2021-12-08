@@ -8,23 +8,6 @@ let quadruple_of_list l =
   let e = List.nth_exn l in
   (e 0, e 1, e 2, e 3)
 
-(* http://rosettacode.org/wiki/Permutations#OCaml *)
-let rec permutations l =
-  let n = List.length l in
-  if n = 1 then [ l ]
-  else
-    let rec sub e = function
-      | [] -> failwith "sub"
-      | h :: t -> if h = e then t else h :: sub e t
-    in
-    let rec aux k =
-      let e = List.nth_exn l k in
-      let subperms = permutations (sub e l) in
-      let t = List.map ~f:(fun a -> e :: a) subperms in
-      if k < n - 1 then List.rev_append t (aux (k + 1)) else t
-    in
-    aux 0
-
 let parse_line line =
   String.split ~on:'|' line
   |> List.map ~f:(fun s ->
@@ -34,53 +17,54 @@ let parse_line line =
                 String.to_list s |> List.sort ~compare:Char.compare))
   |> tuple_of_list
 
-let input = In_channel.read_lines "../input-test" |> List.map ~f:parse_line
+let segment_subset digit ~of_ =
+  let digit1_components, digit2_components =
+    (Set.of_list (module Char) digit, Set.of_list (module Char) of_)
+  in
+  Set.is_subset digit1_components ~of_:digit2_components
 
-let output_values =
-  List.map
-    ~f:(fun observation ->
-      let _, out = observation in
-      out)
-    input
+let find_mapping input_values =
+  let find_value ~length ?(subset_of = []) ?(superset_of = [])
+      ?(not_equal_to = []) () =
+    List.find_exn input_values ~f:(fun s ->
+        List.length s = length
+        && List.for_all subset_of ~f:(fun v -> segment_subset s ~of_:v)
+        && List.for_all superset_of ~f:(fun v -> segment_subset v ~of_:s)
+        && List.for_all not_equal_to ~f:(fun v ->
+               not (List.equal Char.( = ) s v)))
+  in
 
-let input_values =
-  List.map
-    ~f:(fun observation ->
-      let i, _ = observation in
-      i)
-    input
-
-let apply_mapping mapping value =
-  List.map value ~f:(fun c -> Hashtbl.find_exn mapping c)
-  |> List.sort ~compare:Char.compare
-
-let mapping_works mapping (one, four, seven) =
-  let eq = List.equal Char.( = ) in
-  eq (apply_mapping mapping one) [ 'c'; 'f' ]
-  && eq (apply_mapping mapping four) [ 'b'; 'c'; 'd'; 'f' ]
-  && eq (apply_mapping mapping seven) [ 'a'; 'c'; 'f' ]
-
-let find_working_mapping input_values =
-  let one, four, seven, _ =
-    List.map [ 2; 4; 3; 7 ] ~f:(fun n ->
-        Option.value_exn
-          (List.find input_values ~f:(fun s -> List.length s = n)))
+  let one, four, seven, eight =
+    List.map [ 2; 4; 3; 7 ] ~f:(fun n -> find_value ~length:n ())
     |> quadruple_of_list
   in
 
-  let segments = [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g' ] in
+  let three = find_value ~length:5 ~superset_of:[ one ] () in
+  let nine = find_value ~length:6 ~superset_of:[ four ] () in
+  let zero =
+    find_value ~length:6 ~superset_of:[ seven ] ~not_equal_to:[ nine ] ()
+  in
+  let five =
+    find_value ~length:5 ~subset_of:[ nine ] ~not_equal_to:[ three ] ()
+  in
+  let two = find_value ~length:5 ~not_equal_to:[ three; five ] () in
+  let six = find_value ~length:6 ~not_equal_to:[ nine; zero ] () in
 
-  List.map
-    (permutations (List.map ~f:int_of_char segments))
-    ~f:(fun permutation ->
-      List.map2_exn segments permutation ~f:(fun s p -> (s, char_of_int p)))
-  |> List.map ~f:(Hashtbl.of_alist_exn (module Char))
-  |> List.filter ~f:(fun m -> mapping_works m (one, four, seven))
+  [ zero; one; two; three; four; five; six; seven; eight; nine ]
+
+let get_mapped_value mapping value =
+  Option.value_exn
+    (List.findi mapping ~f:(fun _ m -> List.equal Char.( = ) value m))
+  |> fst
+
+let get_mapped_number mapping number =
+  List.fold number ~init:0 ~f:(fun acc value ->
+      get_mapped_value mapping value + (10 * acc))
 
 let () =
-  List.fold output_values ~init:0 ~f:(fun acc values ->
-      acc
-      + List.count values ~f:(fun s ->
-            let len = List.length s in
-            len = 2 || len = 4 || len = 3 || len = 7))
+  let input = In_channel.read_lines "../input" |> List.map ~f:parse_line in
+
+  List.fold input ~init:0 ~f:(fun acc (input_values, output_values) ->
+      let mapping = find_mapping input_values in
+      acc + get_mapped_number mapping output_values)
   |> string_of_int |> print_endline
