@@ -1,0 +1,21 @@
+(library
+  (name common)
+  (libraries core)
+  (modules Common))
+
+(library
+  (name seafloor)
+  (libraries core)
+  (modules Seafloor))
+
+(executable
+ (name mainA)
+ (libraries core common seafloor)
+ (modes byte exe)
+ (modules MainA))
+
+(executable
+ (name mainB)
+ (libraries core common seafloor)
+ (modes byte exe)
+ (modules MainB))
