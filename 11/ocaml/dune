@@ -1,0 +1,16 @@
+(library
+  (name octopi)
+  (libraries core)
+  (modules Octopi))
+
+(executable
+ (name mainA)
+ (libraries core octopi)
+ (modes byte exe)
+ (modules MainA))
+
+(executable
+ (name mainB)
+ (libraries core octopi)
+ (modes byte exe)
+ (modules MainB))
