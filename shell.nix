@@ -13,6 +13,7 @@ pkgs.mkShell {
     ocamlformat
     core
     utop
+    ppx_deriving
     ppx_jane
   ];
 }
