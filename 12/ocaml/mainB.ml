@@ -3,13 +3,7 @@ open Core
 let tuple_of_list l = (List.nth_exn l 0, List.nth_exn l 1)
 
 let count_paths graph =
-  let count_visits seen node =
-    (match node with
-    | Cave.Start -> Map.find seen "start"
-    | Cave.Small s -> Map.find seen s
-    | _ -> None)
-    |> Option.value ~default:0
-  in
+  let count_visits seen node = Map.find seen node |> Option.value ~default:0 in
 
   let is_seen seen node =
     match node with
@@ -24,8 +18,7 @@ let count_paths graph =
   let mark_seen seen =
     let update o = match o with None -> 1 | Some v -> v + 1 in
     function
-    | Cave.Start -> Map.update seen "start" ~f:update
-    | Cave.Small s -> Map.update seen s ~f:update
+    | (Cave.Start | Cave.Small _) as node -> Map.update seen node ~f:update
     | _ -> seen
   in
 
@@ -40,7 +33,7 @@ let count_paths graph =
           |> List.concat_map ~f:(aux graph seen (node :: path))
   in
 
-  let seen = Map.empty (module String) in
+  let seen = Map.empty (module Cave) in
   aux graph seen [] Start |> List.map ~f:List.rev
 
 let () =

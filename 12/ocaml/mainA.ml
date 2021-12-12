@@ -2,14 +2,12 @@ open Core
 
 let count_paths graph =
   let is_seen seen = function
-    | Cave.Start -> Set.mem seen "start"
-    | Cave.Small s -> Set.mem seen s
+    | (Cave.Start | Cave.Small _) as node -> Set.mem seen node
     | _ -> false
   in
 
   let mark_seen seen = function
-    | Cave.Start -> Set.add seen "start"
-    | Cave.Small s -> Set.add seen s
+    | (Cave.Start | Cave.Small _) as node -> Set.add seen node
     | _ -> seen
   in
 
@@ -24,7 +22,7 @@ let count_paths graph =
           |> List.concat_map ~f:(aux graph seen (node :: path))
   in
 
-  let seen = Set.empty (module String) in
+  let seen = Set.empty (module Cave) in
   aux graph seen [] Cave.Start
 
 let () =
