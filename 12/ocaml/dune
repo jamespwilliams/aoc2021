@@ -1,16 +1,25 @@
 (library
-  (name common)
+  (name cave)
   (libraries core)
-  (modules Common))
+  (preprocess (pps ppx_deriving.show ppx_deriving.eq))
+  (modules Cave))
+
+(library
+  (name caveGraph)
+  (libraries core cave)
+  (preprocess (pps ppx_deriving.show ppx_deriving.eq))
+  (modules CaveGraph))
 
 (executable
  (name mainA)
- (libraries core common)
+ (libraries core cave caveGraph)
+ (preprocess (pps ppx_deriving.show ppx_deriving.eq))
  (modes byte exe)
  (modules MainA))
 
 (executable
  (name mainB)
- (libraries core common)
+ (libraries core cave caveGraph)
+ (preprocess (pps ppx_deriving.show ppx_deriving.eq))
  (modes byte exe)
  (modules MainB))
