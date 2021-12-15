@@ -1,12 +1,12 @@
 (library
   (name common)
-  (libraries core)
+  (libraries core core_kernel.pairing_heap)
+  (preprocess (pps ppx_deriving.show ppx_deriving.eq ppx_deriving.ord ppx_sexp_conv ppx_hash))
   (modules Common))
 
 (executable
  (name mainA)
- (libraries core core_kernel.pairing_heap common)
- (preprocess (pps ppx_deriving.show ppx_deriving.eq ppx_deriving.ord ppx_sexp_conv ppx_hash))
+ (libraries core common)
  (modes byte exe)
  (modules MainA))
 
