@@ -1,16 +1,16 @@
 (library
-  (name common)
+  (name parse)
   (libraries core)
-  (modules Common))
+  (modules Parse))
 
 (executable
  (name mainA)
- (libraries core common)
+ (libraries core parse)
  (modes byte exe)
  (modules MainA))
 
 (executable
  (name mainB)
- (libraries core common)
+ (libraries core parse)
  (modes byte exe)
  (modules MainB))
