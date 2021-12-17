@@ -1,0 +1,17 @@
+(library
+  (name common)
+  (libraries core re2)
+  (modules Common))
+
+(executable
+ (name mainA)
+ (libraries core re2 common)
+ (preprocess (pps ppx_deriving.show))
+ (modes byte exe)
+ (modules MainA))
+
+(executable
+ (name mainB)
+ (libraries core re2 common)
+ (modes byte exe)
+ (modules MainB))
