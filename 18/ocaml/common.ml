@@ -1,4 +1,5 @@
 open Core
+open Core.Option.Let_syntax
 
 type regular_number = { n : int; depth : int }
 
@@ -34,8 +35,8 @@ let explode number =
         else Some { n; depth })
   in
 
-  let explosion = find_explosion number 0 in
-  Option.map explosion ~f:(do_explosion number)
+  let%map explosion = find_explosion number 0 in
+  do_explosion number explosion
 
 let split number =
   let rec aux number =
