@@ -11,6 +11,7 @@ pkgs.mkShell {
     dune_2
     ocaml-lsp
     ocamlformat
+    re2
     core
     utop
     ppx_deriving
