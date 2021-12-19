@@ -1,0 +1,18 @@
+(library
+  (name common)
+  (libraries core)
+  (modules Common))
+
+(executable
+ (name mainA)
+ (libraries core common)
+ (modes byte exe)
+ (preprocess (pps ppx_let ppx_deriving.ord ppx_compare ppx_pipebang ppx_sexp_conv))
+ (modules MainA))
+
+(executable
+ (name mainB)
+ (libraries core common)
+ (modes byte exe)
+ (preprocess (pps ppx_let ppx_deriving.ord ppx_compare ppx_pipebang ppx_sexp_conv))
+ (modules MainB))
