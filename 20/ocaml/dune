@@ -1,0 +1,21 @@
+(library
+  (name image)
+  (libraries core)
+  (modules Image))
+
+(library
+  (name common)
+  (libraries core image)
+  (modules Common))
+
+(executable
+ (name mainA)
+ (libraries core common image)
+ (modes byte exe)
+ (modules MainA))
+
+(executable
+ (name mainB)
+ (libraries core common image)
+ (modes byte exe)
+ (modules MainB))
