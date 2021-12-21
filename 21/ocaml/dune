@@ -1,0 +1,17 @@
+(library
+  (name common)
+  (libraries core)
+  (modules Common))
+
+(executable
+ (name mainA)
+ (libraries core common)
+ (modes byte exe)
+ (modules MainA))
+
+(executable
+ (name mainB)
+ (libraries core common)
+ (preprocess (pps ppx_sexp_conv ppx_compare ppx_hash))
+ (modes byte exe)
+ (modules MainB))
