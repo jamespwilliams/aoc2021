@@ -1,64 +1,58 @@
 open Core
 
-(* let's call the players x and y respectively *)
+type player = { position : int; score : int } [@@deriving hash, sexp, compare]
 
-type turn = bool
+module State = struct
+  type t = { player_one : player; player_two : player }
+  [@@deriving hash, sexp, compare]
 
-type die = int
-
-module Quintuple = struct
-  type t = int * int * int * int * int [@@deriving hash, sexp, compare]
-end
-
-module Quadruple = struct
-  type t = int * int * int * int [@@deriving hash, sexp, compare]
+  let create player_one_start player_two_start =
+    {
+      player_one = { position = player_one_start; score = 0 };
+      player_two = { position = player_two_start; score = 0 };
+    }
 end
 
 let startx, starty =
   List.(
     In_channel.read_lines "../input"
     >>| fun s -> String.split s ~on:' ' |> last_exn |> int_of_string)
-  |> fun l -> (List.nth_exn l 0, List.nth_exn l 1)
+  |> fun l -> (List.nth_exn l 0 - 1, List.nth_exn l 1 - 1)
 
 let possible_die_rolls =
   List.concat_map [ 1; 2; 3 ] ~f:(fun one ->
       List.concat_map [ 1; 2; 3 ] ~f:(fun two ->
           List.map [ 1; 2; 3 ] ~f:(fun three -> one + two + three)))
 
-let rec find_number_of_wins x y x_score y_score turns cache =
-  (* todo refactor *)
-  match Hashtbl.find cache (x, y, x_score, y_score, turns % 2) with
-  | Some result -> result
-  | None ->
-      let result =
-        if x_score >= 21 then (1, 0)
-        else if y_score >= 21 then (0, 1)
-        else if turns % 2 = 0 then
+let rec find_number_of_wins (state : State.t) cache =
+  if state.player_one.score >= 21 then (1, 0)
+  else if state.player_two.score >= 21 then (0, 1)
+  else
+    match Hashtbl.find cache state with
+    | Some result -> result
+    | None ->
+        let result =
           List.map possible_die_rolls ~f:(fun die_roll ->
-              let next_x = (x + die_roll) % 10 in
-              find_number_of_wins next_x y
-                (x_score + next_x + 1)
-                y_score (turns + 1) cache)
+              let position = (state.player_one.position + die_roll) % 10 in
+              let score = state.player_one.score + position + 1 in
+
+              find_number_of_wins
+                {
+                  player_one = state.player_two;
+                  player_two = { position; score };
+                }
+                cache)
           |> List.fold ~init:(0, 0) ~f:(fun (x1, y1) (x2, y2) ->
-                 (x1 + x2, y1 + y2))
-        else
-          List.map possible_die_rolls ~f:(fun die_roll ->
-              let next_y = (y + die_roll) % 10 in
-              find_number_of_wins x next_y x_score
-                (y_score + next_y + 1)
-                (turns + 1) cache)
-          |> List.fold ~init:(0, 0) ~f:(fun (x1, y1) (x2, y2) ->
-                 (x1 + x2, y1 + y2))
-      in
-      Hashtbl.add_exn cache
-        ~key:(x, y, x_score, y_score, turns % 2)
-        ~data:result;
-      result
+                 (x1 + y2, y1 + x2))
+        in
+        Hashtbl.add_exn cache ~key:state ~data:result;
+        result
 
 let () =
   let xwins, ywins =
-    find_number_of_wins (startx - 1) (starty - 1) 0 0 0
-      (Hashtbl.create (module Quintuple))
+    find_number_of_wins
+      (State.create startx starty)
+      (Hashtbl.create (module State))
   in
   List.max_elt [ xwins; ywins ] ~compare
   |> fun x -> Option.value_exn x |> Printf.printf "%d\n"

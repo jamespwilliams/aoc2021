@@ -1,6 +1,13 @@
 open Core
 
-(* let's call the players x and y respectively *)
+type player = { position : int; score : int }
+
+type state = {
+  player_one : player;
+  player_two : player;
+  die : int;
+  turns : int;
+}
 
 type turn = bool
 
@@ -12,50 +19,45 @@ let startx, starty =
     >>| fun s -> String.split s ~on:' ' |> last_exn |> int_of_string)
   |> fun l -> (List.nth_exn l 0, List.nth_exn l 1)
 
-let increment_die (die : die) (times : int) : die * int =
-  let times = ref times in
-  let result = ref 0 in
-  let die = ref die in
-  while !times > 0 do
-    result := !result + !die;
-    times := !times - 1;
-    die :=
-      let next = !die + 1 in
-      if next > 100 then 1 else next
-  done;
-  (!die, !result)
+let roll_die_thrice (die : die) : die * int =
+  ((die + 3) % 100, 3 + die + ((die + 1) % 100) + ((die + 2) % 100))
 
-let rec move (position : int) (die : die) : int * die =
-  let die, move = increment_die die 3 in
+let move (position : int) (die : die) : int * die =
+  let die, move = roll_die_thrice die in
   ((move + position) % 10, die)
 
-let step position score die =
+let step { position; score } die =
   let position, die = move position die in
-  (position, score + (position + 1), die)
+  ({ position; score = score + position + 1 }, die)
 
 let range n = List.init n ~f:Fn.id
 
 let result =
-  List.fold_until (range 10000)
-    ~init:(startx - 1, starty - 1, 0, 0, 1, 0)
-    ~f:(fun (x, y, x_score, y_score, die, turns) _ ->
-      Printf.printf "%d %d (%d %d)\n" x y x_score y_score;
+  let initial_state =
+    {
+      player_one = { position = startx - 1; score = 0 };
+      player_two = { position = starty - 1; score = 0 };
+      die = 0;
+      turns = 0;
+    }
+  in
 
-      let x, y, x_score, y_score, die =
+  List.fold_until (range 10000) ~init:initial_state
+    ~f:(fun { player_one; player_two; die; turns } _ ->
+      let player_one, player_two, die =
         if turns % 2 = 0 then
-          let x, x_score, die = step x x_score die in
-          (x, y, x_score, y_score, die)
+          let player_one, die = step player_one die in
+          (player_one, player_two, die)
         else
-          let y, y_score, die = step y y_score die in
-          (x, y, x_score, y_score, die)
+          let player_two, die = step player_two die in
+          (player_one, player_two, die)
       in
 
       let turns = turns + 1 in
 
-      Printf.printf "%d %d (%d %d)\n" x y x_score y_score;
-
-      if x_score >= 1000 || y_score >= 1000 then Stop (x_score, y_score, turns)
-      else Continue (x, y, x_score, y_score, die, turns))
+      if player_one.score >= 1000 || player_two.score >= 1000 then
+        Stop (player_one.score, player_two.score, turns)
+      else Continue { player_one; player_two; die; turns })
     ~finish:(fun _ -> failwith "iteration limit reached")
 
 let () =
